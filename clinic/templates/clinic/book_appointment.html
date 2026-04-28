@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysioFlow CRM | Book Appointment</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #0f766e;
+            color: white;
+            padding: 24px 50px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .title {
+            margin-bottom: 25px;
+        }
+
+        .title h2 {
+            margin: 0;
+            font-size: 26px;
+            color: #0f766e;
+        }
+
+        .title p {
+            color: #6b7280;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        select,
+        input,
+        textarea {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 22px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button,
+        .btn {
+            width: 100%;
+            background: #0f766e;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        button:hover,
+        .btn:hover {
+            background: #115e59;
+        }
+
+        .secondary {
+            background: #334155;
+            margin-top: 12px;
+        }
+
+        .footer-note {
+            margin-top: 22px;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PhysioFlow CRM</h1>
+    <p>Martha Griffiths CHC Booking System</p>
+</div>
+
+<div class="container">
+    <div class="title">
+        <h2>Book an Appointment</h2>
+        <p>Select a patient, clinician, appointment type, and preferred time.</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Patient</label>
+        <select name="patient" required>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">
+                {{ patient.full_name }} ({{ patient.file_number }})
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Clinician / Department</label>
+        <select name="clinician" required>
+            {% for clinician in clinicians %}
+            <option value="{{ clinician.id }}">
+                {{ clinician.name }} ({{ clinician.department.name }})
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Appointment Type</label>
+        <select name="appointment_type" required>
+            {% for appointment_type in appointment_types %}
+            <option value="{{ appointment_type.id }}">
+                {{ appointment_type.name }}
+                ({{ appointment_type.duration_minutes }} min)
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Start Time</label>
+        <input
+            type="datetime-local"
+            name="start_time"
+            value="{% if initial_datetime %}{{ initial_datetime|date:'Y-m-d\TH:i' }}{% endif %}"
+            required
+        >
+
+        <label>Session Notes</label>
+        <textarea
+            name="notes"
+            placeholder="Example: Knee pain assessment, treatment done, exercises prescribed, follow-up plan..."
+        ></textarea>
+
+        <button type="submit">Confirm Booking</button>
+
+        <a href="{% url 'calendar' %}" class="btn secondary">
+            Back to Calendar
+        </a>
+    </form>
+
+    <div class="footer-note">
+        Appointments are only available between 08:00 and 16:00.
+    </div>
+</div>
+
+</body>
+</html>

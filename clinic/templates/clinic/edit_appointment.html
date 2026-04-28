@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysioFlow CRM | Edit Appointment</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #0f766e;
+            color: white;
+            padding: 28px 55px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #0f766e;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #f8fafc;
+            border-left: 5px solid #0f766e;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 22px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #0f766e;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .secondary {
+            background: #334155;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PhysioFlow CRM</h1>
+    <p>Edit Appointment / Add Session Notes</p>
+</div>
+
+<div class="container">
+    <h2>{{ appointment.patient.full_name }}</h2>
+
+    <div class="info-box">
+        <p><strong>File Number:</strong> {{ appointment.patient.file_number }}</p>
+        <p><strong>Clinician:</strong> {{ appointment.clinician.name }}</p>
+        <p><strong>Department:</strong> {{ appointment.clinician.department.name }}</p>
+        <p><strong>Appointment Type:</strong> {{ appointment.appointment_type.name }}</p>
+        <p>
+            <strong>Date & Time:</strong>
+            {{ appointment.start_time|date:"d M Y" }}
+            at {{ appointment.start_time|date:"H:i" }}
+        </p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Status</label>
+        <select name="status" required>
+            <option value="booked" {% if appointment.status == 'booked' %}selected{% endif %}>
+                Booked
+            </option>
+            <option value="completed" {% if appointment.status == 'completed' %}selected{% endif %}>
+                Completed
+            </option>
+            <option value="cancelled" {% if appointment.status == 'cancelled' %}selected{% endif %}>
+                Cancelled
+            </option>
+            <option value="no_show" {% if appointment.status == 'no_show' %}selected{% endif %}>
+                No Show
+            </option>
+        </select>
+
+        <label>Session Notes</label>
+        <textarea
+            name="notes"
+            placeholder="Write treatment notes, assessment findings, exercises prescribed, response to treatment, and follow-up plan..."
+        >{{ appointment.notes|default:"" }}</textarea>
+
+        <button type="submit" class="btn">
+            Save Session Notes
+        </button>
+
+        <a
+            href="{% url 'patient_profile' appointment.patient.id %}"
+            class="btn secondary"
+        >
+            Back to Patient
+        </a>
+
+        <a href="{% url 'dashboard' %}" class="btn secondary">
+            Dashboard
+        </a>
+    </form>
+</div>
+
+</body>
+</html>

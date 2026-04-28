@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysioFlow CRM | Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #0f766e;
+            color: white;
+            padding: 28px 55px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 34px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            font-size: 17px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 25px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #0f766e;
+            color: white;
+            padding: 13px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .btn.secondary {
+            background: #334155;
+        }
+
+        .btn.small {
+            padding: 7px 11px;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .card,
+        .section {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+        }
+
+        .card {
+            padding: 24px;
+        }
+
+        .card h3 {
+            margin: 0;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .card p {
+            margin: 12px 0 0;
+            font-size: 34px;
+            font-weight: bold;
+            color: #0f766e;
+        }
+
+        .section {
+            padding: 26px;
+            margin-bottom: 28px;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #0f766e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            background: #f1f5f9;
+            padding: 13px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .link {
+            color: #0f766e;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .status-booked {
+            color: #0f766e;
+            font-weight: bold;
+        }
+
+        .status-completed {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .status-cancelled {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .status-no-show {
+            color: #ea580c;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .empty-box {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .alert-box {
+            background: #fff7ed;
+            border-left: 6px solid #f97316;
+        }
+
+        @media (max-width: 900px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PhysioFlow CRM</h1>
+    <p>Martha Griffiths CHC Clinical Booking Dashboard</p>
+</div>
+
+<div class="container">
+
+    <div class="quick-actions">
+        <a href="{% url 'book_appointment' %}" class="btn">
+            Book Appointment
+        </a>
+
+        <a href="{% url 'calendar' %}" class="btn secondary">
+            Calendar View
+        </a>
+
+        <a href="{% url 'patient_list' %}" class="btn secondary">
+            Patients
+        </a>
+
+        <a href="{% url 'create_referral' %}" class="btn secondary">
+            Create Referral
+        </a>
+
+        <a href="/admin/" class="btn secondary">
+            Admin Panel
+        </a>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Total Patients</h3>
+            <p>{{ total_patients }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Clinicians</h3>
+            <p>{{ total_clinicians }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Appointments</h3>
+            <p>{{ total_appointments }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Pending Referrals</h3>
+            <p>{{ pending_referrals }}</p>
+        </div>
+    </div>
+
+    <div class="section alert-box">
+        <h2>Urgent Referrals</h2>
+
+        {% if urgent_referrals %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>From</th>
+                        <th>To Department</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for referral in urgent_referrals %}
+                    <tr>
+                        <td>
+                            <a
+                                href="{% url 'patient_profile' referral.patient.id %}"
+                                class="link"
+                            >
+                                {{ referral.patient.full_name }}
+                            </a>
+                        </td>
+                        <td>{{ referral.referred_from.name }}</td>
+                        <td>{{ referral.referred_to_department.name }}</td>
+                        <td>
+                            <span class="status-no-show">
+                                {{ referral.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty">No urgent referrals.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Today's Appointments</h2>
+
+        {% if today_appointments %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Clinician</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for appointment in today_appointments %}
+                    <tr>
+                        <td>{{ appointment.start_time|date:"H:i" }}</td>
+
+                        <td>
+                            <a
+                                href="{% url 'patient_profile' appointment.patient.id %}"
+                                class="link"
+                            >
+                                {{ appointment.patient.full_name }}
+                            </a>
+                        </td>
+
+                        <td>{{ appointment.clinician.name }}</td>
+                        <td>{{ appointment.clinician.department.name }}</td>
+
+                        <td>
+                            {% if appointment.status == 'booked' %}
+                                <span class="status-booked">Booked</span>
+                            {% elif appointment.status == 'completed' %}
+                                <span class="status-completed">Completed</span>
+                            {% elif appointment.status == 'cancelled' %}
+                                <span class="status-cancelled">Cancelled</span>
+                            {% elif appointment.status == 'no_show' %}
+                                <span class="status-no-show">No Show</span>
+                            {% else %}
+                                {{ appointment.get_status_display }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a
+                                href="/admin/clinic/appointment/{{ appointment.id }}/change/"
+                                class="btn small"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-box">
+                <p class="empty">No appointments booked for today.</p>
+                <a href="{% url 'book_appointment' %}" class="btn">
+                    Book First Appointment
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Upcoming Appointments</h2>
+
+        {% if upcoming_appointments %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Clinician</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for appointment in upcoming_appointments %}
+                    <tr>
+                        <td>{{ appointment.start_time|date:"d M Y" }}</td>
+                        <td>{{ appointment.start_time|date:"H:i" }}</td>
+
+                        <td>
+                            <a
+                                href="{% url 'patient_profile' appointment.patient.id %}"
+                                class="link"
+                            >
+                                {{ appointment.patient.full_name }}
+                            </a>
+                        </td>
+
+                        <td>{{ appointment.clinician.name }}</td>
+                        <td>{{ appointment.clinician.department.name }}</td>
+
+                        <td>
+                            {% if appointment.status == 'booked' %}
+                                <span class="status-booked">Booked</span>
+                            {% elif appointment.status == 'completed' %}
+                                <span class="status-completed">Completed</span>
+                            {% elif appointment.status == 'cancelled' %}
+                                <span class="status-cancelled">Cancelled</span>
+                            {% elif appointment.status == 'no_show' %}
+                                <span class="status-no-show">No Show</span>
+                            {% else %}
+                                {{ appointment.get_status_display }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a
+                                href="/admin/clinic/appointment/{{ appointment.id }}/change/"
+                                class="btn small"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty">No upcoming appointments yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Recent Referrals</h2>
+
+        {% if recent_referrals %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>From</th>
+                        <th>To Department</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for referral in recent_referrals %}
+                    <tr>
+                        <td>
+                            <a
+                                href="{% url 'patient_profile' referral.patient.id %}"
+                                class="link"
+                            >
+                                {{ referral.patient.full_name }}
+                            </a>
+                        </td>
+                        <td>{{ referral.referred_from.name }}</td>
+                        <td>{{ referral.referred_to_department.name }}</td>
+                        <td>
+                            {% if referral.status == 'pending' %}
+                                <span class="status-no-show">Pending</span>
+                            {% elif referral.status == 'accepted' %}
+                                <span class="status-booked">Accepted</span>
+                            {% elif referral.status == 'completed' %}
+                                <span class="status-completed">Completed</span>
+                            {% else %}
+                                <span class="status-cancelled">Cancelled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty">No referrals yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>

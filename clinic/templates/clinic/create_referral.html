@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysioFlow CRM | Create Referral</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f7fb; color: #1f2937; }
+        .header { background: #0f766e; color: white; padding: 28px 55px; }
+        .container { max-width: 850px; margin: 40px auto; background: white; padding: 35px; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        h1, h2 { margin-top: 0; }
+        h2 { color: #0f766e; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; }
+        select, textarea { width: 100%; padding: 13px; margin-bottom: 22px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 15px; }
+        textarea { height: 130px; }
+        .btn { background: #0f766e; color: white; border: none; padding: 14px 22px; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
+        .secondary { background: #334155; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PhysioFlow CRM</h1>
+    <p>Create Interdisciplinary Referral</p>
+</div>
+
+<div class="container">
+    <h2>Create Referral</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Patient</label>
+        <select name="patient" required>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">{{ patient.full_name }} - {{ patient.file_number }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Referred From</label>
+        <select name="referred_from" required>
+            {% for clinician in clinicians %}
+            <option value="{{ clinician.id }}">{{ clinician.name }} ({{ clinician.department.name }})</option>
+            {% endfor %}
+        </select>
+
+        <label>Refer To Department</label>
+        <select name="referred_to_department" required>
+            {% for department in departments %}
+            <option value="{{ department.id }}">{{ department.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Reason for Referral</label>
+        <textarea name="reason" required placeholder="Example: Patient needs OT assessment for ADLs and home adaptation."></textarea>
+
+        <button type="submit" class="btn">Create Referral</button>
+        <a href="{% url 'dashboard' %}" class="btn secondary">Back to Dashboard</a>
+    </form>
+</div>
+
+</body>
+</html>

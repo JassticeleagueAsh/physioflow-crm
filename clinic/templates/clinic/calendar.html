@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysioFlow CRM | Calendar</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #0f766e;
+            color: white;
+            padding: 28px 55px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 25px;
+        }
+
+        .section {
+            background: white;
+            padding: 26px;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        h2 {
+            color: #0f766e;
+            margin: 0;
+        }
+
+        .btn {
+            background: #0f766e;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .secondary {
+            background: #334155;
+        }
+
+        input {
+            padding: 11px;
+            border-radius: 9px;
+            border: 1px solid #d1d5db;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            background: #f1f5f9;
+            padding: 13px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .slot {
+            font-weight: bold;
+            color: #334155;
+            width: 120px;
+        }
+
+        .appointment {
+            background: #ecfdf5;
+            border-left: 5px solid #0f766e;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .book-slot {
+            color: #0f766e;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .available {
+            color: #64748b;
+            font-style: italic;
+            margin-right: 14px;
+        }
+
+        .link {
+            color: #0f766e;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PhysioFlow CRM</h1>
+    <p>Daily Calendar View</p>
+</div>
+
+<div class="container">
+    <div class="section">
+
+        <div class="topbar">
+            <h2>Calendar: {{ calendar_date|date:"d M Y" }}</h2>
+
+            <form method="GET">
+                <input
+                    type="date"
+                    name="date"
+                    value="{{ calendar_date|date:'Y-m-d' }}"
+                >
+                <button type="submit" class="btn">View Date</button>
+                <a href="{% url 'dashboard' %}" class="btn secondary">
+                    Dashboard
+                </a>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time Slot</th>
+                    <th>Appointments</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for slot in time_slots %}
+                <tr>
+                    <td class="slot">{{ slot.time }}</td>
+
+                    <td>
+                        {% if slot.appointments %}
+                            {% for appointment in slot.appointments %}
+                            <div class="appointment">
+                                <a
+                                    href="{% url 'patient_profile' appointment.patient.id %}"
+                                    class="link"
+                                >
+                                    {{ appointment.patient.full_name }}
+                                </a>
+                                <br>
+                                {{ appointment.clinician.name }} -
+                                {{ appointment.clinician.department.name }}
+                                <br>
+                                {{ appointment.start_time|date:"H:i" }} -
+                                {{ appointment.end_time|date:"H:i" }}
+                                <br><br>
+                                <a
+                                    href="/admin/clinic/appointment/{{ appointment.id }}/change/"
+                                    class="btn"
+                                >
+                                    Edit
+                                </a>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <span class="available">Available</span>
+                            <a
+                                href="{% url 'book_appointment' %}?date={{ calendar_date|date:'Y-m-d' }}&time={{ slot.time }}"
+                                class="book-slot"
+                            >
+                                Book Slot
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+</body>
+</html>

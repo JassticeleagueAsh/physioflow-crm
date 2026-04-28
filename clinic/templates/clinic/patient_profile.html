@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysioFlow CRM | Patient Profile</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #0f766e;
+            color: white;
+            padding: 28px 55px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 25px;
+        }
+
+        .section {
+            background: white;
+            padding: 26px;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+            margin-bottom: 25px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        h2,
+        h3 {
+            color: #0f766e;
+        }
+
+        .btn {
+            background: #0f766e;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+
+        .secondary {
+            background: #334155;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            background: #f1f5f9;
+            padding: 13px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .empty {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .history-item {
+            border-left: 5px solid #0f766e;
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            background: #0f766e;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .notes-box {
+            background: white;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            margin-top: 12px;
+        }
+
+        .notes-box p {
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 700px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PhysioFlow CRM</h1>
+    <p>Patient Profile</p>
+</div>
+
+<div class="container">
+
+    <div class="section">
+        <h2>{{ patient.full_name }}</h2>
+
+        <div class="profile-grid">
+            <p><strong>File Number:</strong> {{ patient.file_number }}</p>
+            <p><strong>Phone:</strong> {{ patient.phone_number }}</p>
+            <p><strong>Email:</strong> {{ patient.email|default:"No email" }}</p>
+            <p><strong>Date of Birth:</strong> {{ patient.date_of_birth|default:"Not added" }}</p>
+        </div>
+
+        <p><strong>General Patient Notes:</strong> {{ patient.notes|default:"No notes added." }}</p>
+
+        <a href="{% url 'book_appointment' %}" class="btn">
+            Book Appointment
+        </a>
+
+        <a href="{% url 'create_referral' %}" class="btn">
+            Create Referral
+        </a>
+
+        <a href="{% url 'patient_list' %}" class="btn secondary">
+            Back to Patients
+        </a>
+
+        <a href="{% url 'dashboard' %}" class="btn secondary">
+            Dashboard
+        </a>
+    </div>
+
+    <div class="section">
+        <h3>Clinical History / Session Notes</h3>
+
+        {% if appointments %}
+            {% for appointment in appointments %}
+            <div class="history-item">
+                <div class="history-header">
+                    <div>
+                        <strong>{{ appointment.start_time|date:"d M Y" }}</strong>
+                        at {{ appointment.start_time|date:"H:i" }}
+                    </div>
+
+                    <span class="badge">
+                        {{ appointment.get_status_display }}
+                    </span>
+                </div>
+
+                <p>
+                    <strong>Clinician:</strong>
+                    {{ appointment.clinician.name }}
+                </p>
+
+                <p>
+                    <strong>Department:</strong>
+                    {{ appointment.clinician.department.name }}
+                </p>
+
+                <p>
+                    <strong>Appointment Type:</strong>
+                    {{ appointment.appointment_type.name }}
+                    ({{ appointment.appointment_type.duration_minutes }} min)
+                </p>
+
+                {% if appointment.notes %}
+                <div class="notes-box">
+                    <strong>Session Notes:</strong>
+                    <p>{{ appointment.notes }}</p>
+                </div>
+                {% else %}
+                <p class="empty">No session notes recorded for this appointment.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">No clinical history available for this patient.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Referral History</h3>
+
+        {% if referrals %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>From</th>
+                    <th>To Department</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for referral in referrals %}
+                <tr>
+                    <td>{{ referral.created_at|date:"d M Y" }}</td>
+                    <td>{{ referral.referred_from.name }}</td>
+                    <td>{{ referral.referred_to_department.name }}</td>
+                    <td>{{ referral.reason }}</td>
+                    <td>{{ referral.get_status_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="empty">No referrals found for this patient.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>
